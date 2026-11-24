@@ -1,0 +1,76 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.table.*;
+
+public class ProcessingOrders extends JFrame {
+
+    private DefaultTableModel dtm;
+	private JTable tblStudentDetails;
+    private int[] preparingOrderIndexArray = new int[0];
+    private JButton btnBack;
+    public ProcessingOrders() {
+        Burger[] burgerArray = Tools.getAllBurgers(); 
+        for (int i = 0; i < burgerArray.length; i++) {
+            if (burgerArray[i].getOrderStatus() == Burger.PREPARING) {
+                int[] tempArray = new int[preparingOrderIndexArray.length + 1];
+                System.arraycopy(preparingOrderIndexArray, 0, tempArray, 0, preparingOrderIndexArray.length);
+                tempArray[tempArray.length - 1] = i;
+                preparingOrderIndexArray = tempArray;
+            }
+        }
+
+        if (preparingOrderIndexArray.length == 0) {
+            JOptionPane.showMessageDialog(null, "No orders are being prepared at the moment.","Error",JOptionPane.ERROR_MESSAGE);
+                    return;
+        } else {
+            setTitle("Burger Shop - Processing Orders");
+            setSize(500, 400);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            setLayout(new BorderLayout());
+            setLocationRelativeTo(null);
+
+            JLabel lblTitle = new JLabel("Processing Orders");
+            lblTitle.setFont(new Font("", Font.BOLD, 30));
+            lblTitle.setHorizontalAlignment(JLabel.CENTER);
+            lblTitle.setOpaque(true);
+            lblTitle.setBackground(Color.RED);
+            lblTitle.setForeground(Color.WHITE);
+            add(lblTitle, BorderLayout.NORTH);
+
+            String[] columnsName={"Order ID","Customer ID","Customer Name","Burger Qty","Total Price"};
+		    dtm = new DefaultTableModel(columnsName, 0);
+            tblStudentDetails = new JTable(dtm);
+            JScrollPane tablePane = new JScrollPane(tblStudentDetails);
+            add("Center", tablePane);
+            dtm.setRowCount(0);
+            for (int i : preparingOrderIndexArray) {
+                Object[] rowData = {
+                    burgerArray[i].getOrderId(),
+                    burgerArray[i].getCustomerId(),
+                    burgerArray[i].getCustomerName(),
+                    burgerArray[i].getBurgerCount(),
+                    burgerArray[i].getOrderValue()
+                };
+                dtm.addRow(rowData);
+            }
+
+            JPanel southPanel = new JPanel();
+            btnBack = new JButton("Back");
+            btnBack.setBackground(Color.RED);
+            btnBack.setForeground(Color.WHITE);
+            btnBack.setFocusPainted(false);
+            btnBack.setFont(new Font("Arial", Font.BOLD, 14));
+            btnBack.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    dispose();
+                }
+            });
+            southPanel.add(btnBack);
+            add("South",southPanel);
+
+            setVisible(true);
+        }
+    
+    }
+}
