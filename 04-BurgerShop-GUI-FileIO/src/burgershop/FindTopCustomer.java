@@ -1,0 +1,326 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package burgershop;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author omira
+ */
+public class FindTopCustomer extends javax.swing.JFrame {
+
+    /**
+     * Creates new form PreparingOrders
+     */
+    public FindTopCustomer() {
+        initComponents();
+        addDataToTable();
+    }
+
+    private void addDataToTable() {
+        DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
+        model.setRowCount(0);
+
+        // 1. Read all orders from Burger.txt into an array
+        Burger[] allOrders = new Burger[0];
+        try (BufferedReader br = new BufferedReader(new FileReader("Burger.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 5) {
+                    String orderId = parts[0].trim();
+                    String customerId = parts[1].trim();
+                    String customerName = parts[2].trim();
+                    int qty = Integer.parseInt(parts[3].trim());
+                    int status = Integer.parseInt(parts[4].trim());
+
+                    Burger b = new Burger(orderId, customerId, customerName, qty, status);
+                    Burger[] temp = new Burger[allOrders.length + 1];
+                    for (int i = 0; i < allOrders.length; i++) {
+                        temp[i] = allOrders[i];
+                    }
+                    temp[allOrders.length] = b;
+                    allOrders = temp;
+                }
+            }
+        } catch (IOException | NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Error reading file: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (allOrders.length == 0) {
+            JOptionPane.showMessageDialog(this, "No orders found.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // 2. Group quantities by unique customer
+        String[] customerIds = new String[0];
+        String[] customerNames = new String[0];
+        int[] totalQtys = new int[0];
+
+        for (Burger b : allOrders) {
+            int index = -1;
+            for (int i = 0; i < customerIds.length; i++) {
+                if (customerIds[i].equalsIgnoreCase(b.getCustomerId())) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1) {
+                totalQtys[index] += b.getQty();
+            } else {
+                int newLen = customerIds.length + 1;
+                String[] tempIds = new String[newLen];
+                String[] tempNames = new String[newLen];
+                int[] tempQtys = new int[newLen];
+
+                for (int i = 0; i < customerIds.length; i++) {
+                    tempIds[i] = customerIds[i];
+                    tempNames[i] = customerNames[i];
+                    tempQtys[i] = totalQtys[i];
+                }
+
+                tempIds[newLen - 1] = b.getCustomerId();
+                tempNames[newLen - 1] = b.getCustomerName();
+                tempQtys[newLen - 1] = b.getQty();
+
+                customerIds = tempIds;
+                customerNames = tempNames;
+                totalQtys = tempQtys;
+            }
+        }
+
+        // 3. Sort customers from highest qty to lowest
+        for (int i = 0; i < totalQtys.length - 1; i++) {
+            for (int j = 0; j < totalQtys.length - 1 - i; j++) {
+                if (totalQtys[j] < totalQtys[j + 1]) {
+                    int tempQty = totalQtys[j];
+                    totalQtys[j] = totalQtys[j + 1];
+                    totalQtys[j + 1] = tempQty;
+
+                    String tempId = customerIds[j];
+                    customerIds[j] = customerIds[j + 1];
+                    customerIds[j + 1] = tempId;
+
+                    String tempName = customerNames[j];
+                    customerNames[j] = customerNames[j + 1];
+                    customerNames[j + 1] = tempName;
+                }
+            }
+        }
+
+        // 4. Add sorted rows to the table
+        for (int i = 0; i < customerIds.length; i++) {
+            double totalIncome = totalQtys[i] * BurgerShop.getBurgerPrice() * 1.0;
+            model.addRow(new Object[]{
+                i + 1,
+                customerIds[i],
+                customerNames[i],
+                totalQtys[i],
+                totalIncome
+            });
+        }
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        btnReload = new javax.swing.JButton();
+        btnGoHome = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Top Customers");
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
+            },
+            new String [] {
+                "No.", "Customer ID", "Name", "Qty", "Total"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Double.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(jTable2);
+        if (jTable2.getColumnModel().getColumnCount() > 0) {
+            jTable2.getColumnModel().getColumn(0).setResizable(false);
+            jTable2.getColumnModel().getColumn(0).setPreferredWidth(20);
+            jTable2.getColumnModel().getColumn(1).setResizable(false);
+            jTable2.getColumnModel().getColumn(2).setResizable(false);
+            jTable2.getColumnModel().getColumn(2).setHeaderValue("Name");
+            jTable2.getColumnModel().getColumn(3).setResizable(false);
+            jTable2.getColumnModel().getColumn(3).setPreferredWidth(20);
+            jTable2.getColumnModel().getColumn(4).setResizable(false);
+        }
+
+        btnReload.setBackground(new java.awt.Color(102, 255, 51));
+        btnReload.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnReload.setText("Reload");
+        btnReload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReloadActionPerformed(evt);
+            }
+        });
+
+        btnGoHome.setBackground(new java.awt.Color(255, 102, 102));
+        btnGoHome.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnGoHome.setText("Back");
+        btnGoHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGoHomeActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnReload)
+                .addGap(18, 18, 18)
+                .addComponent(btnGoHome, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnReload, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnGoHome, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnReloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReloadActionPerformed
+        addDataToTable();
+    }//GEN-LAST:event_btnReloadActionPerformed
+
+    private void btnGoHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGoHomeActionPerformed
+        dispose();// TODO add your handling code here:
+    }//GEN-LAST:event_btnGoHomeActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(FindTopCustomer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(FindTopCustomer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(FindTopCustomer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(FindTopCustomer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnGoHome;
+    private javax.swing.JButton btnReload;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTable2;
+    // End of variables declaration//GEN-END:variables
+
+}
